@@ -43,12 +43,11 @@ def parse(gross_raw_html, div_id="bukku-page") -> str:
     #     if unparsed_div[i] == "<":
 
     # use find() to delete all html tags
-    doink = unparsed_div.find("<")
-    while (doink != -1):
-        emp = doink
+    emp = unparsed_div.find("<")
+    while (emp != -1):
         fin = unparsed_div.find(">")  # this should theoretically work since this is finding the FIRST instance every time
         unparsed_div = unparsed_div[:emp] + unparsed_div[fin+1:]
-        doink = unparsed_div.find("<")
+        emp = unparsed_div.find("<")
 
     return unparsed_div
 
@@ -60,8 +59,7 @@ def main():
     try:
         catalog_request = requests.get(catalog_url)
         course_info = parse(catalog_request.text)
-        with open("deletethisshit.txt", "x") as f:
-            f.write(course_info)
+        print(course_info)
     finally:
         input("hit enter or any key or whatever to terminate")
 
