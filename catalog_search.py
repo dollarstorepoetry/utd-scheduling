@@ -3,14 +3,9 @@ Displays the information associated with a UT Dallas course code.
 """
 # import datetime
 import requests
-import tkinter  # for work on a gui after 10 nov
+import tkinter as tk  # for work on a gui after 10 nov
 
-# 10 nov commit changes (delete before committing):
-# created remove_html_tags() method
-# simplified build_url()
-# changed a few comments and variable names to be more descriptive
-# https://dev.to/casualcoders/git-beginner-crash-course-3ggk or just use the built in vsc stuff lol
-
+global course_code
 
 def build_url(course_code) -> str:
     """
@@ -60,15 +55,32 @@ def remove_html_tags(raw_html) -> str:
     # use find() to delete all html tags
 
     # print(raw_html,"\n\n")
-    emp = raw_html.find("<")
+    clean_html = raw_html
+    emp = clean_html.find("<")
     while (emp != -1):
-        fin = raw_html.find(">")  # this should theoretically work since this is finding the FIRST instance every time
-        raw_html = raw_html[:emp] + raw_html[fin+1:]
-        emp = raw_html.find("<")
-    return raw_html
+        fin = clean_html.find(">")  # this should theoretically work since this is finding the FIRST instance every time
+        clean_html = clean_html[:emp] + clean_html[fin+1:]
+        emp = clean_html.find("<")
+    return clean_html
 
 
-def main():
+def format(desc, textwidth):
+    """
+    Formats a program as to be readable on a box with width textwidth.
+    """
+    # add new lines to make things more convenient
+    
+
+    # loop through all the words; add a new line before a word if
+    # the length of the line exceeds textwidth
+    words = desc.split()
+    pass
+
+
+def old_main():
+    """
+    Old version of main() method that works in terminal.
+    """
     course_code = input("Enter the name of your class (space between school and number): ")
     catalog_url = build_url(course_code)
     try:
@@ -77,6 +89,39 @@ def main():
         print(course_info)
     finally:
         input("hit enter or any key or whatever to terminate")
+
+
+def main():
+    # metadata; <head>
+    root = tk.Tk()
+    root.geometry("500x550")
+    root.title("UTD Catalog Search")
+
+    # not meta stuff
+    def go_through_the_motions(cc):
+        # don't know if I should keep this as an inner method, but I also don't see why it shouldn't be
+        CourseInfoDisp.delete("1.0", tk.END)
+        CourseInfoDisp.insert(tk.END, "Getting course info from catalog.utdallas.edu...")  # this doesn't display for some reason
+        course_code = cc
+        course_info = parse(requests.get(build_url(cc)).text)  # all of the old main method in one line of code because i am a thug
+        
+        CourseInfoDisp.delete("1.0", tk.END)
+        CourseInfoDisp.insert(tk.END, course_info)
+    
+    l1 = tk.Label(root, text="Enter the name of your class (space between school and number): ")
+    l1.pack()
+    e = tk.Entry(root)
+    e.pack()
+    button = tk.Button(root, text="Get Class Info", width = 10, command=lambda: go_through_the_motions(e.get()))
+    button.pack()
+    root.bind("<Return>", lambda event:go_through_the_motions(e.get()))  # binds enter to do the same thing as button
+    CourseInfoDisp = tk.Text(root, width = 50)
+    CourseInfoDisp.pack()
+    termbutt = tk.Button(root, text="Quit",width=10, command=root.destroy)
+    termbutt.pack()
+    root.bind("<Escape>", lambda event:root.quit)
+    # Label to show status of program
+    root.mainloop()
 
 
 if __name__ == '__main__':
