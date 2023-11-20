@@ -1,25 +1,38 @@
 """
-Displays the information associated with a UT Dallas course code.
+Displays the course description associated with a UT Dallas course code.
 """
 # import datetime
 import requests
-import tkinter as tk  # for work on a gui after 10 nov
+import tkinter as tk
 
-global course_code
+course = ""
 
 def build_url(course_code) -> str:
     """
     Builds the URL for a course given the course code.
     """
+
+    # implement some error handling here later lol
+
     ourl = "https://catalog.utdallas.edu/"
     # ourl += f"{datetime.date.today().year}/"
     ourl += "now/" # not quite sure if this will work 100% of the time, but this should be a thing UTD does
-    thing = course_code.split(" ")
-    if int(thing[1][0]) > 4:
+
+    global course
+    course = course_code.split(" ")
+    if (len(course) == 1):  # split if no space is given
+        # once the first int is reached, make the thing into the format that we like
+        for i, ch in enumerate(course_code):
+            if ch.isdigit():
+                course = [course_code[:i], course_code[i:]]
+                break
+
+
+    if int(course[1][0]) > 4:
         ourl += "graduate/"
     else:
         ourl += "undergraduate/"
-    ourl += f"courses/{thing[0].lower()}{thing[1]}"
+    ourl += f"courses/{course[0].lower()}{course[1]}"
     return ourl
 
 
@@ -64,17 +77,32 @@ def remove_html_tags(raw_html) -> str:
     return clean_html
 
 
-def format(desc, textwidth):
-    """
-    Formats a program as to be readable on a box with width textwidth.
-    """
-    # add new lines to make things more convenient
-    
+# def format(desc, textwidth):
+#     """
+#     Formats a program as to be readable on a box with width textwidth.
+#     please don't integrate this into code right now it does NOT work
+#     """
+#     # add new lines to make things more convenient
+#     thing = desc.split(" ")
+#     do_a_break = False
+#     wi = 1  # skip the first word because it's the course code with no space between school and number
+#     while (not do_a_break):
+#         word = thing[wi]
+#         if type(word[0]) != int:
+#             for ci, ch in enumerate(word):
+#                 if (type[ch] == int): # this doesn't work
+#                     desc = desc[:ci] + "\n" + desc[ci:]  # this doesn't work
+#                     break
+#         wi += 1
 
-    # loop through all the words; add a new line before a word if
-    # the length of the line exceeds textwidth
-    words = desc.split()
-    pass
+#     # add a new line before prereqs
+
+#     # loop through all the words; add a new line before a word if
+#     # the length of the line exceeds textwidth
+#     lensum = 0
+#     for wi, word in enumerate(thing):
+#         lensum += len(word)
+#     pass
 
 
 def old_main():
@@ -101,16 +129,16 @@ def main():
     def go_through_the_motions(cc):
         # don't know if I should keep this as an inner method, but I also don't see why it shouldn't be
         CourseInfoDisp.delete("1.0", tk.END)
-        CourseInfoDisp.insert(tk.END, "Getting course info from catalog.utdallas.edu...")  # this doesn't display for some reason
+        CourseInfoDisp.insert(tk.END, "Getting course info from catalog.utdallas.edu... (this is secretly an error message. bug wip)")  # this doesn't display for some reason
         course_code = cc
-        course_info = parse(requests.get(build_url(cc)).text)  # all of the old main method in one line of code because i am a thug
+        course_info = parse(requests.get(build_url(course_code)).text)  # all of the old main method in one line of code because i am a thug
         
         CourseInfoDisp.delete("1.0", tk.END)
         CourseInfoDisp.insert(tk.END, course_info)
     
     l1 = tk.Label(root, text="Enter the name of your class (space between school and number): ")
     l1.pack()
-    e = tk.Entry(root)
+    e = tk.Entry(root, width=9)
     e.pack()
     button = tk.Button(root, text="Get Class Info", width = 10, command=lambda: go_through_the_motions(e.get()))
     button.pack()
@@ -126,3 +154,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # doink = """MATH3351 - Advanced CalculusMATH 3351 Advanced Calculus (3 semester credit hours) The course covers the interplay of linear algebra, higher dimensional calculus, and geometry. Topics include vectors, coordinate systems, the elementary topology of Euclidean spaces and surfaces, the derivative as a linear map, the gradient, multivariate optimization, vector fields, vector differential operators, multiple integrals, General Stokes Theorem, and differential forms. Applications are given to geometry, science, and engineering. Basic topological intuition is developed. Prerequisites: (A grade of at least a C- in either MATH 2415 or MATH 2419 or equivalent) and a grade of at least a C- in MATH 2418 or equivalent. (3-0) S"""
+    # print(format(doink, 0))
