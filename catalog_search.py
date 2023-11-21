@@ -11,9 +11,9 @@ def build_url(course_code) -> str:
     """
     Builds the URL for a course given the course code.
     """
-
+    #
     # implement some error handling here later lol
-
+    #
     ourl = "https://catalog.utdallas.edu/"
     # ourl += f"{datetime.date.today().year}/"
     ourl += "now/" # not quite sure if this will work 100% of the time, but this should be a thing UTD does
@@ -64,50 +64,59 @@ def remove_html_tags(raw_html) -> str:
     """
     Removes all HTML tags (info between <angle brackets>) from a block of HTML.
     Intended to be used with sections of text... don't know why you would use it otherwise lol
+    
+    Not the most extensible of methods but that's fine maybe
     """
-    # use find() to delete all html tags
-
-    # print(raw_html,"\n\n")
     clean_html = raw_html
     emp = clean_html.find("<")
     while (emp != -1):
         fin = clean_html.find(">")  # this should theoretically work since this is finding the FIRST instance every time
-        clean_html = clean_html[:emp] + clean_html[fin+1:]
+
+        # it's formatting time
+        tag_type = clean_html[emp:fin+1]
+        if tag_type == '</h1>' or tag_type == '</span>':  # do new line
+            clean_html = clean_html[:emp] + "\n" + clean_html[fin+1:].strip()
+        else:
+            clean_html = clean_html[:emp] + clean_html[fin+1:]
         emp = clean_html.find("<")
     return clean_html
 
 
-# def format(desc, textwidth):
-#     """
-#     Formats a program as to be readable on a box with width textwidth.
-#     please don't integrate this into code right now it does NOT work
-#     """
-#     # add new lines to make things more convenient
-#     thing = desc.split(" ")
-#     do_a_break = False
-#     wi = 1  # skip the first word because it's the course code with no space between school and number
-#     while (not do_a_break):
-#         word = thing[wi]
-#         if type(word[0]) != int:
-#             for ci, ch in enumerate(word):
-#                 if (type[ch] == int): # this doesn't work
-#                     desc = desc[:ci] + "\n" + desc[ci:]  # this doesn't work
-#                     break
-#         wi += 1
+def newline_format(text_block, textwidth):
+    """
+    Formats a block of text to be readable on a box with width textwidth.
+    Please make these comments better later, I'm tired
+    """
+    descarr = text_block.split("\n")
+    newarrstr = ""
 
-#     # add a new line before prereqs
+    # format each section of the block of text individually
+    for i in range(len(descarr)):
+        sectionarr = descarr[i].split(" ")
+        secstr = ""
 
-#     # loop through all the words; add a new line before a word if
-#     # the length of the line exceeds textwidth
-#     lensum = 0
-#     for wi, word in enumerate(thing):
-#         lensum += len(word)
-#     pass
+        # loop through each word within the block
+        line_length = 0
+        for j, word in enumerate(sectionarr):
+            # once the length of the line exceeds textwidth,
+            # start a new line
+            if (line_length+len(word) >= textwidth):
+                sectionarr[j-1] += '\n'  # start new line
+                # sectionarr[j] = sectionarr[j].strip()  # take weird spaces off
+                line_length = 0  # mathematically start new line
+            line_length += len(word) + 1  # +1 to account for spaces!
+
+        for thing in sectionarr:
+            secstr += thing + " " if thing[-1] != "\n" else thing
+        descarr[i] = secstr
+    for section in descarr:
+        newarrstr += section + "\n"
+    return newarrstr
 
 
 def old_main():
     """
-    Old version of main() method that works in terminal.
+    Old version of main() method that works entirely in terminal.
     """
     course_code = input("Enter the name of your class (space between school and number): ")
     catalog_url = build_url(course_code)
@@ -122,28 +131,35 @@ def old_main():
 def main():
     # metadata; <head>
     root = tk.Tk()
-    root.geometry("500x550")
+    root.geometry("500x500")
     root.title("UTD Catalog Search")
+    textwidth = 50
 
     # not meta stuff
     def go_through_the_motions(cc):
-        # don't know if I should keep this as an inner method, but I also don't see why it shouldn't be
+        # don't know if I should keep this as an inner method, 
+        # but I also don't see why it shouldn't be
         CourseInfoDisp.delete("1.0", tk.END)
-        CourseInfoDisp.insert(tk.END, "Getting course info from catalog.utdallas.edu... (this is secretly an error message. bug wip)")  # this doesn't display for some reason
+        CourseInfoDisp.insert(tk.END, "Getting course info from catalog.utdallas.edu... (this is secretly an error message. bug wip)")  
+        # this doesn't display for some reason
         course_code = cc
-        course_info = parse(requests.get(build_url(course_code)).text)  # all of the old main method in one line of code because i am a thug
+        course_info = newline_format(parse(requests.get(build_url(course_code)).text), textwidth)  
+        # all of the old main method in one line of code because i am a thug
         
         CourseInfoDisp.delete("1.0", tk.END)
         CourseInfoDisp.insert(tk.END, course_info)
     
-    l1 = tk.Label(root, text="Enter the name of your class (space between school and number): ")
+    l1 = tk.Label(root, text="Enter the course code of your class: ")
     l1.pack()
     e = tk.Entry(root, width=9)
     e.pack()
-    button = tk.Button(root, text="Get Class Info", width = 10, command=lambda: go_through_the_motions(e.get()))
+
+    button = tk.Button(root, text="Get Class Info", width = 10, 
+                       command=lambda: go_through_the_motions(e.get()))
     button.pack()
-    root.bind("<Return>", lambda event:go_through_the_motions(e.get()))  # binds enter to do the same thing as button
-    CourseInfoDisp = tk.Text(root, width = 50)
+    root.bind("<Return>", lambda event:go_through_the_motions(e.get()))  
+
+    CourseInfoDisp = tk.Text(root, width = textwidth)
     CourseInfoDisp.pack()
     termbutt = tk.Button(root, text="Quit",width=10, command=root.destroy)
     termbutt.pack()
@@ -155,4 +171,4 @@ def main():
 if __name__ == '__main__':
     main()
     # doink = """MATH3351 - Advanced CalculusMATH 3351 Advanced Calculus (3 semester credit hours) The course covers the interplay of linear algebra, higher dimensional calculus, and geometry. Topics include vectors, coordinate systems, the elementary topology of Euclidean spaces and surfaces, the derivative as a linear map, the gradient, multivariate optimization, vector fields, vector differential operators, multiple integrals, General Stokes Theorem, and differential forms. Applications are given to geometry, science, and engineering. Basic topological intuition is developed. Prerequisites: (A grade of at least a C- in either MATH 2415 or MATH 2419 or equivalent) and a grade of at least a C- in MATH 2418 or equivalent. (3-0) S"""
-    # print(format(doink, 0))
+    # print(newline_format(doink, 30))
