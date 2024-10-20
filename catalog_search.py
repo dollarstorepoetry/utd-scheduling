@@ -85,17 +85,18 @@ def remove_html_tags(raw_html) -> str:
 def newline_format(text_block, textwidth):
     """
     Formats a block of text to be readable on a box with width textwidth.
-    Please make these comments better later, I'm tired
-    """
-    descarr = text_block.split("\n")
-    newarrstr = ""
 
-    # format each section of the block of text individually
+    this is probably like a really stupid method and tkinter probably alread
+    has some stuff built in that does this but like. do i care¿ no
+    """
+    descarr = text_block.split("\n") # split the text block by new line. we're gonna edit this in place bc why would we not
+
+    # format each section (delimited by \n) of the block of text individually
     for i in range(len(descarr)):
-        sectionarr = descarr[i].split(" ")
+        sectionarr = descarr[i].split(" ")  # split *this* block by whitespace
         secstr = ""
 
-        # loop through each word within the block
+        # loop through each word within the block and do the nice new line formatting thing
         line_length = 0
         for j, word in enumerate(sectionarr):
             # once the length of the line exceeds textwidth,
@@ -106,9 +107,12 @@ def newline_format(text_block, textwidth):
                 line_length = 0  # mathematically start new line
             line_length += len(word) + 1  # +1 to account for spaces!
 
-        for thing in sectionarr:
-            secstr += thing + " " if thing[-1] != "\n" else thing
+        for thing in sectionarr:  # do u like my variable names :3
+            secstr += (thing + " ") if (thing[-1] != "\n") else (thing)
+            # >complains about readability >uses ternary operator >mfw
         descarr[i] = secstr
+
+    newarrstr = ""  # oh nooo i didn't declare the variable at the beginning of the block 🤓
     for section in descarr:
         newarrstr += section + "\n"
     return newarrstr
@@ -118,7 +122,7 @@ def old_main():
     """
     Old version of main() method that works entirely in terminal.
     """
-    course_code = input("Enter the name of your class (space between school and number): ")
+    course_code = input("Enter the course code associated with your class: ") 
     catalog_url = build_url(course_code)
     try:
         catalog_request = requests.get(catalog_url)
