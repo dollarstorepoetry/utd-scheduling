@@ -4,6 +4,7 @@ Displays the course description associated with a UT Dallas course code.
 # import datetime
 import requests
 import tkinter as tk
+import sys
 
 course = ""
 
@@ -122,17 +123,21 @@ def old_main():
     """
     Old version of main() method that works entirely in terminal.
     """
-    course_code = input("Enter the course code associated with your class: ") 
-    catalog_url = build_url(course_code)
-    try:
-        catalog_request = requests.get(catalog_url)
-        course_info = parse(catalog_request.text)
-        print(course_info)
-    finally:
-        input("hit enter or any key or whatever to terminate")
+    while (True):
+        course_code = input("\nEnter the course code associated with your class: ") 
+        catalog_url = build_url(course_code)
+        try:
+            catalog_request = requests.get(catalog_url)
+            course_info = parse(catalog_request.text)
+            print(course_info)
+            print()
+        except:
+            print("oops :3")
+        # finally:
+        #     input("hit enter or any key or whatever to terminate")
 
 
-def main():
+def ambatukinter():
     # metadata; <head>
     root = tk.Tk()
     root.geometry("500x500")
@@ -147,8 +152,9 @@ def main():
         CourseInfoDisp.insert(tk.END, "Getting course info from catalog.utdallas.edu... (this is secretly an error message. bug wip)")  
         # this doesn't display for some reason
         course_code = cc
-        course_info = newline_format(parse(requests.get(build_url(course_code)).text), textwidth)  
-        # all of the old main method in one line of code because i am a thug
+        catalog_url = build_url(course_code)
+        course_info = parse(requests.get(catalog_url).text)
+        course_info = newline_format(course_info, textwidth) 
         
         CourseInfoDisp.delete("1.0", tk.END)
         CourseInfoDisp.insert(tk.END, course_info)
@@ -158,8 +164,7 @@ def main():
     e = tk.Entry(root, width=9)
     e.pack()
 
-    button = tk.Button(root, text="Get Class Info", width = 10, 
-                       command=lambda: go_through_the_motions(e.get()))
+    button = tk.Button(root, text="Get Class Info", width = 10, command=lambda: go_through_the_motions(e.get()))
     button.pack()
     root.bind("<Return>", lambda event:go_through_the_motions(e.get()))  
 
@@ -172,7 +177,20 @@ def main():
     root.mainloop()
 
 
+def main():
+    if len(sys.argv) != 2:
+        raise ValueError("Please indicate whether to run the CLI or the GUI.")
+    
+    choice = sys.argv[1]
+    while True:
+        if (choice.upper() == 'CLI'):
+            old_main()
+        elif (choice.upper() == 'GUI'):
+            ambatukinter()
+        else: 
+            print("no")
+
+
+
 if __name__ == '__main__':
     main()
-    # doink = """MATH3351 - Advanced CalculusMATH 3351 Advanced Calculus (3 semester credit hours) The course covers the interplay of linear algebra, higher dimensional calculus, and geometry. Topics include vectors, coordinate systems, the elementary topology of Euclidean spaces and surfaces, the derivative as a linear map, the gradient, multivariate optimization, vector fields, vector differential operators, multiple integrals, General Stokes Theorem, and differential forms. Applications are given to geometry, science, and engineering. Basic topological intuition is developed. Prerequisites: (A grade of at least a C- in either MATH 2415 or MATH 2419 or equivalent) and a grade of at least a C- in MATH 2418 or equivalent. (3-0) S"""
-    # print(newline_format(doink, 30))
