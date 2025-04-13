@@ -8,6 +8,12 @@ import sys
 
 course = ""
 
+def yeah(arr):
+    s = ""
+    for item in arr:
+        s += item
+    return s
+
 def build_url(course_code) -> str:
     """
     Builds the URL for a course given the course code.
@@ -183,7 +189,7 @@ def main():
     elif len(sys.argv) < 2:
         raise ValueError("Please indicate whether to run the CLI or the GUI.")
     
-    choice = sys.argv[1]
+    choice = yeah(sys.argv[1:])
     if (choice.upper() == 'CLI'):
         while True:
             old_main()
