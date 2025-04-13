@@ -119,22 +119,21 @@ def newline_format(text_block, textwidth):
     return newarrstr
 
 
-def old_main():
+def old_main(course_code=0):
     """
     Old version of main() method that works entirely in terminal.
     """
-    while (True):
-        course_code = input("\nEnter the course code associated with your class: ") 
+    if course_code == 0:
+        print("just force an error (e.g. feed something other than a course code, pass a signal e.g. ctrl+c) to exit i'm soooo lazy")
+        course_code = input("\nEnter the course code associated with your class: ")
+    try:
         catalog_url = build_url(course_code)
-        try:
-            catalog_request = requests.get(catalog_url)
-            course_info = parse(catalog_request.text)
-            print(course_info)
-            print()
-        except:
-            print("oops :3")
-        # finally:
-        #     input("hit enter or any key or whatever to terminate")
+        catalog_request = requests.get(catalog_url)
+        course_info = parse(catalog_request.text)
+        print(course_info)
+        print()
+    except:
+        print("error encountered. exiting")
 
 
 def ambatukinter():
@@ -178,17 +177,20 @@ def ambatukinter():
 
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) == 1:
+        old_main()
+        return
+    elif len(sys.argv) < 2:
         raise ValueError("Please indicate whether to run the CLI or the GUI.")
     
     choice = sys.argv[1]
-    while True:
-        if (choice.upper() == 'CLI'):
+    if (choice.upper() == 'CLI'):
+        while True:
             old_main()
-        elif (choice.upper() == 'GUI'):
-            ambatukinter()
-        else: 
-            print("no")
+    elif (choice.upper() == 'GUI'):
+        ambatukinter()
+    else: 
+        old_main(choice)
 
 
 
